@@ -1,0 +1,24 @@
+<!DOCTYPE html><!--yo le html 5 bujauxa-->
+<html lang="en">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Simple Interest</title>
+</head>
+<body>
+   <script>
+
+// int conversion method 1. parseInt 2. PasseFloat 3.Number 4. + 
+
+      let principle = +prompt("Enter the Principle: ")
+      let time = Number(prompt("Enter the time: "))
+      let rate = +prompt("Enter the rate: ")
+      
+      let SI =(principle*time*rate)/100
+      let amount = SI + principle
+      // document.write("interest is :"+SI)
+      document.write("The Amount is "+ amount+ " principle is "+principle+" , time is "+time+" and rate is "+rate);
+      document.write(`The amount is ${abount} when principle is ${principle}, time is ${time} years and rate is ${rate}`)//template literal
+   </script>
+</body>
+</html>

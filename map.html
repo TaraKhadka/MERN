@@ -1,0 +1,238 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+  <link rel="shortcut icon" type="image/png" href="/icon.png" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+    integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
+    crossorigin="" />
+  <script defer src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
+    integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
+    crossorigin=""></script>
+  
+  <script defer src="mapdistance.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/perliedman-leaflet-control-geocoder/2.3.0/Control.Geocoder.min.js" integrity="sha512-cBB5d4XouDdi26TNRNrSVn4k/CSwqrAgkm+hRBD5sloHCxtdCbcehuEIu+SX7b5oC+ICx9GCAiPHEbr+g4XzMg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <title>Mapty: Measure Distance</title>
+  <style>* {
+   margin: 0;
+   padding: 0;
+   box-sizing: inherit;
+ }
+ 
+ html {
+   font-size: 62.5%;
+   box-sizing: border-box;
+ }
+ 
+ body {
+   font-family: 'Manrope', sans-serif;
+   color: #ececec;
+   font-weight: 400;
+   line-height: 1.6;
+   height: 100vh;
+   background-color: #fff;
+   padding: 2.5rem;
+ 
+   display: flex;
+ }
+ 
+ 
+ 
+ 
+ 
+ /* SIDEBAR */
+ .sidebar {
+   flex-basis: 50rem;
+   background-color: #2d3439;
+   padding: 3rem 5rem 4rem 5rem;
+   display: flex;
+   flex-direction: column;
+ }
+ 
+ .logo {
+   height: 5.2rem;
+   align-self: center;
+   margin-bottom: 4rem;
+ }
+ 
+ 
+ 
+ 
+ /* MAP */
+ #map {
+   flex: 1;
+   height: 100%;
+   background-color: #aaa;
+ }
+ 
+ 
+ .leaflet-popup .leaflet-popup-content-wrapper {
+   background-color: #2d3439;
+   color: #ececec;
+   border-radius: 5px;
+   padding-right: 0.6rem;
+ }
+ 
+ .leaflet-popup .leaflet-popup-content {
+   font-size: 1.5rem;
+ }
+ 
+ .leaflet-popup .leaflet-popup-tip {
+   background-color: #2d3439;
+ }
+ footer{
+   position: absolute;
+   opacity: 0;
+ }
+ 
+ .measure{
+   font-size: 65px;
+ }
+ p{
+   font-size: 25px;
+ }
+ @media screen and (max-width: 700px) {
+   body{
+     display: block;
+   }
+   .sidebar {
+     display: none;
+   }
+   .logo {
+     height: 3rem;
+     align-self: center;
+     margin-bottom: 1rem;
+   }
+   .measure{
+     font-size: 25px;
+   }
+   p{
+     font-size: 11px;
+   }
+   footer{
+     opacity: 1;
+     background-color: #2d3439;
+     margin-bottom: 10px;
+     position: relative;
+     text-align: center;
+     
+   }
+ }</style>
+</head>
+
+<body>
+
+  <div class="sidebar">
+    <img src="logo.png" alt="Logo" class="logo" />
+
+   
+        <div>
+          <h1>Mapty: Aerial Distance Calculator</h1>
+          <p>&copy; Developed by Bikash Karki</p>
+          <p>This location is <span class="measure">0</span> km from your current location.</p>
+        </div>
+      
+  </div>
+  <footer>
+    <h1>Mapty: Aerial Distance Calculator</h1>
+    <p>This location is <span class="measure">0</span> km from your current location.</p>
+    <p>&copy; Developed by Bikash Karki</p>
+  </footer>
+  <div id="map"></div>
+  <script>
+   'use strict';
+
+const measure = document.querySelectorAll('.measure');
+
+let map, mapEvent, x1, y1, x2, y2 , geo;
+const latDegToKm = 110.574;
+const lonDegToKm = 111.320;
+if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(function (postion) {
+        const { latitude } = postion.coords;
+        const { longitude } = postion.coords;
+        console.log(`https://www.google.com/maps/@${latitude},${longitude}`);
+        const coords = [latitude, longitude];
+        x1 = Number(latitude) * latDegToKm;
+        y1 = Number(longitude) * lonDegToKm * Math.cos(latitude / 3.14 / 180);
+        const firstCoords = [latitude, longitude];
+         map = L.map('map', {
+             measureControl: true,
+         }).setView(coords, 14);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', ).addTo(map);
+        
+        const geocoder = L.Control.geocoder({
+            defaultMarkGeocode: false
+          })
+            .on('markgeocode', function(e) {
+              var bbox = e.geocode.bbox;
+              var poly = L.polygon([
+                bbox.getSouthEast(),
+                bbox.getNorthEast(),
+                bbox.getNorthWest(),
+                bbox.getSouthWest()
+              ]).addTo(map);
+              map.fitBounds(poly.getBounds());
+            })
+            .addTo(map);
+        // L.tileLayer('http://{s}.google.com/vt/lyrs=p&x={x}&y={y}&z={z}',{
+        //  maxZoom: 16,
+        //  subdomains:['mt0','mt1','mt2','mt3']
+        // }).addTo(map);
+        map.on('click', function (mapE) {
+            mapEvent = mapE;
+            
+            const { lat, lng } = mapEvent.latlng;
+            x2 = Number(lat) * latDegToKm;
+            y2 = Number(lng) * lonDegToKm * Math.cos(lat / 3.14 / 180);
+            let secondCoords = [lat, lng];
+            const distance = Number((Math.sqrt((x2-x1)**2 + (y2-y1)**2)));
+            const fixed = distance.toFixed(2);
+            let latlngs = [firstCoords, secondCoords];
+           
+            //zoom the map to the polyline
+            let polyline = L.polyline(latlngs, {color: 'black'}).addTo(map);
+            // map.fitBounds(polyline.getBounds());
+            
+             measure.forEach(m => m.textContent = `${fixed}`);
+            
+            L.marker([lat, lng]).addTo(map).bindPopup(L.popup({
+                maxWidth: 250,
+                minWidth: 100,
+                autoClose: false,
+                closeOnClick: false,
+        
+            })).setPopupContent(`<small>latitude: ${lat} , longitude:${lng}</small> <br> <h3 style = "color: orange;">${fixed} kms <h3>`).openPopup();
+             
+        });
+        
+        L.marker(coords).addTo(map)
+            .bindPopup(L.popup({
+                autoClose: false,
+                closeOnClick: false,
+            })).setPopupContent('<strong>Your Device is here 📱</strong>')
+            .openPopup();
+    },
+
+        function () {
+            alert('Location is required to use the features of the application')
+        })
+}
+
+
+
+
+  </script>
+  
+</body>
+
+</html>
